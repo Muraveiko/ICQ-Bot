@@ -7,6 +7,7 @@ use Antson\IcqBot\Entities\SendResult;
 use Antson\IcqBot\Entities\BotInfo;
 use Antson\IcqBot\Entities\ChatInfo;
 use Antson\IcqBot\Entities\FileInfo;
+use Antson\IcqBot\Entities\User;
 
 use Muraveiko\PhpCurler\Curler;
 
@@ -23,6 +24,11 @@ class Client
     private $token = '';
 
     /**
+     * @var string
+     */
+    private $uin = '';
+
+    /**
      * @var Curler
      */
     private $curler;
@@ -31,21 +37,28 @@ class Client
      * Client constructor.
      * @param string $token
      * @param string|null $api_url
+     * @throws Exception
      */
     public function __construct($token, $api_url = null)
     {
         $this->token = $token;
+        list(, $this->uin) = explode(':', $token);
+        if (empty($this->uin)) {
+            throw new Exception("wrong token");
+        }
         if (!is_null($api_url)) {
             $this->api_url = $api_url;
         }
-        $this->curler = new Curler(array(
+        $this->curler = new Curler([
             'validMimeTypes' => 'application/json'
-        ));
+        ]);
     }
 
     private function _get_default_param($chatId = null)
     {
-        $param = array('token' => $this->token);
+        $param = [
+            'token' => $this->token
+        ];
         if (!is_null($chatId)) {
             $param['chatId'] = $chatId;
         }
@@ -62,6 +75,14 @@ class Client
         return $this->curler->get($this->api_url . $method . '?' . http_build_query($param));
     }
 
+    /**
+     * Идентификатор бота
+     * @return string
+     */
+    public function myUIN()
+    {
+        return $this->uin;
+    }
 
     // =======================================================================================================
     //      SELF
@@ -204,14 +225,14 @@ class Client
     /**
      * Удалить сообщения
      * @param string $chatId
-     * @param array[string] $msgIds
+     * @param string $msgId
      * @return Entity
      */
-    public function deleteMessages($chatId, $msgIds)
+    public function deleteMessage($chatId, $msgId)
     {
         $param = $this->_get_default_param($chatId);
-        $param['msgIds'] = $msgIds;
-        return new Entity($this->_do_request('messages/editText', $param));
+        $param['msgId'] = $msgId;
+        return new Entity($this->_do_request('messages/deleteMessages', $param));
     }
 
     /**
@@ -238,13 +259,21 @@ class Client
     //     CHATS
     // =======================================================================================================
 
-    public function sendActions()
+    /**
+     * Отправить текущие действия в чат
+     * @param string $chatId
+     * @param [string] $actions - 'looking','typing' или пустой значение, если все действия завершены
+     * @return Entity
+     */
+    public function sendActions($chatId, $actions)
     {
-        /** @todo */
+        $param = $this->_get_default_param($chatId);
+        $param['actions'] = $actions;
+        return new Entity($this->_do_request('chats/sendActions', $param));
     }
 
-
     /**
+     * Получить информацию о чате
      * @param $chatId
      * @return ChatInfo
      */
@@ -254,28 +283,112 @@ class Client
         return new ChatInfo($this->_do_request('chats/getInfo', $param));
     }
 
-    public function getAdmins()
+    /**
+     * Получить список администраторов чата
+     * @param string $chatId
+     * @return User[]
+     * @throws Exception
+     */
+    public function getAdmins($chatId)
     {
-        /** @todo */
-
+        $param = $this->_get_default_param($chatId);
+        $response = $this->_do_request('chats/getAdmins', $param);
+        $data = json_decode($response, true);
+        $r = [];
+        if (!isset($data['admins'])) {
+            $reason = 'Wrong response';
+            if (isset($data->description)) {
+                $reason = $data['description'];
+            }
+            throw new Exception($reason);
+        }
+        foreach ($data['admins'] as $u) {
+            $u['admin'] = true;
+            $r[] = new User($u);
+        }
+        return $r;
     }
 
-    public function getMembers()
+    /**
+     * Получить список участников чата
+     * @param string $chatId
+     * @param string|null $cursor
+     * @return User[]
+     * @throws Exception
+     */
+    public function getMembers($chatId, $cursor = null)
     {
-        /** @todo */
-
+        $param = $this->_get_default_param($chatId);
+        if (!is_null($cursor)) {
+            $param['cursor'] = $cursor;
+        }
+        $response = $this->_do_request('chats/getMembers', $param);
+        $data = json_decode($response, true);
+        $r = [];
+        if (!isset($data['members'])) {
+            $reason = 'Wrong response';
+            if (isset($data->description)) {
+                $reason = $data['description'];
+            }
+            throw new Exception($reason);
+        }
+        foreach ($data['members'] as $u) {
+            if (!empty($u['creator'])) {
+                $u['admin'] = true;  // мне так удобнее, так как создатель чата это тоже админ
+            }
+            $r[] = new User($u);
+        }
+        return $r;
     }
 
-    public function getBlockedUsers()
+    /**
+     * Получить список пользователей, которые заблокированы в чате
+     * @param string $chatId
+     * @return User[]
+     * @throws Exception
+     */
+    public function getBlockedUsers($chatId)
     {
-        /** @todo */
-
+        $param = $this->_get_default_param($chatId);
+        $response = $this->_do_request('chats/getBlockedUsers', $param);
+        $data = json_decode($response, true);
+        $r = [];
+        if (!isset($data['users'])) {
+            $reason = 'Wrong response';
+            if (isset($data->description)) {
+                $reason = $data['description'];
+            }
+            throw new Exception($reason);
+        }
+        foreach ($data['users'] as $u) {
+            $r[] = new User($u);
+        }
+        return $r;
     }
 
-    public function getPendingUsers()
+    /**
+     * Получить список пользователей, которые ожидают вступления в чат
+     * @param string $chatId
+     * @return User[]
+     * @throws Exception
+     */
+    public function getPendingUsers($chatId)
     {
-        /** @todo */
-
+        $param = $this->_get_default_param($chatId);
+        $response = $this->_do_request('chats/getPendingUsers', $param);
+        $data = json_decode($response, true);
+        $r = [];
+        if (!isset($data['users'])) {
+            $reason = 'Wrong response';
+            if (isset($data->description)) {
+                $reason = $data['description'];
+            }
+            throw new Exception($reason);
+        }
+        foreach ($data['users'] as $u) {
+            $r[] = new User($u);
+        }
+        return $r;
     }
 
     /**
@@ -313,7 +426,7 @@ class Client
      * @param bool $approve
      * @return Entity
      */
-    public function resolvePendingUser($chatId,$userId,$approve=true)
+    public function resolvePendingUser($chatId, $userId, $approve = true)
     {
         $param = $this->_get_default_param($chatId);
         $param['userId'] = $userId;
@@ -327,7 +440,7 @@ class Client
      * @param bool $approve
      * @return Entity
      */
-    public function resolvePendingEveryone($chatId,$approve=true)
+    public function resolvePendingEveryone($chatId, $approve = true)
     {
         $param = $this->_get_default_param($chatId);
         $param['everyone'] = true;
@@ -342,7 +455,7 @@ class Client
      * @param string $title
      * @return Entity
      */
-    public function setTitle($chatId,$title)
+    public function setTitle($chatId, $title)
     {
         $param = $this->_get_default_param($chatId);
         $param['title'] = $title;
@@ -356,7 +469,7 @@ class Client
      * @param string $about
      * @return Entity
      */
-    public function setAbout($chatId,$about)
+    public function setAbout($chatId, $about)
     {
         $param = $this->_get_default_param($chatId);
         $param['about'] = $about;
@@ -370,7 +483,7 @@ class Client
      * @param string $rules
      * @return Entity
      */
-    public function setRules($chatId,$rules)
+    public function setRules($chatId, $rules)
     {
         $param = $this->_get_default_param($chatId);
         $param['rules'] = $rules;

@@ -4,3 +4,8 @@ define('TOKEN','bot token here');
 
 // кому будем слать тесты
 define('DEBUG_UIN','you uin or nick');
+
+// тестовая беседа
+// ид можно узнать из ссылки на беседу. Нам нужно то что после слеша
+// https://icq.im/AoL.........Y
+define('DEBUG_CHAT_ID','group chat id AoL.........Y');
