@@ -4,11 +4,16 @@ namespace Antson\IcqBot;
 
 use Antson\IcqBot\Entities\Entity;
 use Antson\IcqBot\Entities\SendResult;
+use Antson\IcqBot\Entities\SendFileResult;
 use Antson\IcqBot\Entities\BotInfo;
 use Antson\IcqBot\Entities\ChatInfo;
+use Antson\IcqBot\Entities\ChatInfoChannel;
+use Antson\IcqBot\Entities\ChatInfoGroup;
+use Antson\IcqBot\Entities\ChatInfoPrivate;
 use Antson\IcqBot\Entities\FileInfo;
 use Antson\IcqBot\Entities\User;
 
+use CurlFile;
 use Muraveiko\PhpCurler\Curler;
 
 class Client
@@ -54,6 +59,11 @@ class Client
         ]);
     }
 
+    /**
+     * готовим массив параметров запроса
+     * @param string|null $chatId
+     * @return array
+     */
     private function _get_default_param($chatId = null)
     {
         $param = [
@@ -66,13 +76,20 @@ class Client
     }
 
     /**
+     * get запрос к api
      * @param string $method
      * @param array $param
-     * @return false|string
+     * @return string
+     * @throws Exception
      */
     private function _do_request($method, $param)
     {
-        return $this->curler->get($this->api_url . $method . '?' . http_build_query($param));
+        $r = $this->curler->get($this->api_url . $method . '?' . http_build_query($param));
+        if($r === false){
+            $curler_error = $this->curler->getError();
+            throw new Exception($curler_error['message']);
+        }
+        return $r;
     }
 
     /**
@@ -85,12 +102,13 @@ class Client
     }
 
     // =======================================================================================================
-    //      SELF
+    //  API: SELF
     // =======================================================================================================
 
     /**
      * Метод можно использовать для проверки валидности токена.
      * @return BotInfo
+     * @throws Exception
      */
     public function self_get()
     {
@@ -100,7 +118,7 @@ class Client
 
 
     // =======================================================================================================
-    //     MESSAGES
+    // API: MESSAGES
     // =======================================================================================================
 
 
@@ -113,6 +131,7 @@ class Client
      * @param string|null $forwardChatId
      * @param array|null $inlineKeyboardMarkup
      * @return SendResult
+     * @throws Exception
      */
     public function sendText($chatId, $text, $replyMsgId = null, $forwardMsgId = null, $forwardChatId = null, $inlineKeyboardMarkup = null)
     {
@@ -143,13 +162,16 @@ class Client
      * @param string|null $forwardMsgId
      * @param string|null $forwardChatId
      * @param string|null $inlineKeyboardMarkup
-     * @return SendResult
+     * @return SendFileResult
+     * @throws Exception
      */
     public function sendPresentFile($chatId, $fileId, $caption = null, $replyMsgId = null, $forwardMsgId = null, $forwardChatId = null, $inlineKeyboardMarkup = null)
     {
         $param = $this->_get_default_param($chatId);
         $param['fileId'] = $fileId;
-        $param['caption'] = $caption;
+        if(!is_null($caption)) {
+            $param['caption'] = $caption;
+        }
         if (!is_null($replyMsgId)) {
             $param['replyMsgId'] = $replyMsgId;
         }
@@ -163,13 +185,42 @@ class Client
             $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
         }
 
-        return new SendResult($this->_do_request('messages/sendFile', $param));
+        return new SendFileResult($this->_do_request('messages/sendFile', $param));
 
     }
 
-    public function sendNewFile($chatId, $fileId)
+    /**
+     * Отправить файл
+     * @param string $chatId
+     * @param CurlFile $curlFile
+     * @param string|null $caption
+     * @param string|null $replyMsgId
+     * @param string|null $forwardMsgId
+     * @param string|null $forwardChatId
+     * @param string|null $inlineKeyboardMarkup
+     * @return SendFileResult
+     */
+    public function sendNewFile($chatId, $curlFile, $caption = null, $replyMsgId = null, $forwardMsgId = null, $forwardChatId = null, $inlineKeyboardMarkup = null)
     {
-        /** @todo */
+        $param = $this->_get_default_param($chatId);
+        if(!is_null($caption)) {
+            $param['caption'] = $caption;
+        }
+        if (!is_null($replyMsgId)) {
+            $param['replyMsgId'] = $replyMsgId;
+        }
+        if (!is_null($forwardMsgId)) {
+            $param['forwardMsgId'] = $forwardMsgId;
+        }
+        if (!is_null($forwardChatId)) {
+            $param['forwardChatId'] = $forwardChatId;
+        }
+        if (!is_null($inlineKeyboardMarkup)) {
+            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
+        }
+        $param['file'] = $curlFile;
+        $response =  $this->curler->post($this->api_url . 'messages/sendFile',$param,false) ;
+        return new SendFileResult($response);
     }
 
     /**
@@ -180,7 +231,8 @@ class Client
      * @param string|null $forwardMsgId
      * @param string|null $forwardChatId
      * @param string|null $inlineKeyboardMarkup
-     * @return SendResult
+     * @return SendFileResult
+     * @throws Exception
      */
     public function sendPresentVoice($chatId, $fileId, $replyMsgId = null, $forwardMsgId = null, $forwardChatId = null, $inlineKeyboardMarkup = null)
     {
@@ -199,12 +251,38 @@ class Client
             $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
         }
 
-        return new SendResult($this->_do_request('messages/sendVoice', $param));
+        return new SendFileResult($this->_do_request('messages/sendVoice', $param));
     }
 
-    public function sendNewVoice($chatId, $fileId)
+    /**
+     * Загрузить и отправить новое голосовое сообщение
+     * Если вы хотите, чтобы клиент отображал этот файл как воспроизводимое голосовое сообщение, он должен быть в формате aac, ogg или m4a.
+     * @param string $chatId
+     * @param CurlFile $curlFile
+     * @param string|null $replyMsgId
+     * @param string|null $forwardMsgId
+     * @param string|null $forwardChatId
+     * @param string|null $inlineKeyboardMarkup
+     * @return SendFileResult
+     */
+    public function sendNewVoice($chatId, $curlFile,  $replyMsgId = null, $forwardMsgId = null, $forwardChatId = null, $inlineKeyboardMarkup = null)
     {
-        /** @todo */
+        $param = $this->_get_default_param($chatId);
+        if (!is_null($replyMsgId)) {
+            $param['replyMsgId'] = $replyMsgId;
+        }
+        if (!is_null($forwardMsgId)) {
+            $param['forwardMsgId'] = $forwardMsgId;
+        }
+        if (!is_null($forwardChatId)) {
+            $param['forwardChatId'] = $forwardChatId;
+        }
+        if (!is_null($inlineKeyboardMarkup)) {
+            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
+        }
+        $param['file'] = $curlFile;
+        $response =  $this->curler->post($this->api_url . 'messages/sendVoice',$param,false) ;
+        return new SendFileResult($response);
     }
 
     /**
@@ -213,6 +291,7 @@ class Client
      * @param string $msgId
      * @param string $text
      * @return Entity
+     * @throws Exception
      */
     public function editText($chatId, $msgId, $text)
     {
@@ -227,6 +306,7 @@ class Client
      * @param string $chatId
      * @param string $msgId
      * @return Entity
+     * @throws Exception
      */
     public function deleteMessage($chatId, $msgId)
     {
@@ -242,6 +322,7 @@ class Client
      * @param bool $showAlert
      * @param string|null $url
      * @return Entity
+     * @throws Exception
      */
     public function answerCallbackQuery($queryId, $text, $showAlert = false, $url = null)
     {
@@ -256,7 +337,7 @@ class Client
 
     }
     // =======================================================================================================
-    //     CHATS
+    // API: CHATS
     // =======================================================================================================
 
     /**
@@ -264,6 +345,7 @@ class Client
      * @param string $chatId
      * @param [string] $actions - 'looking','typing' или пустой значение, если все действия завершены
      * @return Entity
+     * @throws Exception
      */
     public function sendActions($chatId, $actions)
     {
@@ -275,12 +357,13 @@ class Client
     /**
      * Получить информацию о чате
      * @param $chatId
-     * @return ChatInfo
+     * @return ChatInfo|ChatInfoPrivate|ChatInfoGroup|ChatInfoChannel
+     * @throws Exception
      */
     public function chatGetInfo($chatId)
     {
         $param = $this->_get_default_param($chatId);
-        return new ChatInfo($this->_do_request('chats/getInfo', $param));
+        return ChatInfo::Fabric($this->_do_request('chats/getInfo', $param));
     }
 
     /**
@@ -397,6 +480,7 @@ class Client
      * @param string $userId Уникальный ник или id пользователя.
      * @param bool $delLastMessages
      * @return Entity
+     * @throws Exception
      */
     public function blockUser($chatId, $userId, $delLastMessages = true)
     {
@@ -411,6 +495,7 @@ class Client
      * @param string $chatId Уникальный ник или id группы или канала.
      * @param string $userId Уникальный ник или id пользователя.
      * @return Entity
+     * @throws Exception
      */
     public function unblockUser($chatId, $userId)
     {
@@ -421,10 +506,11 @@ class Client
 
     /**
      * Принять решение о пользователе, ожидающем вступления в чат
-     * @param $chatId
-     * @param $userId
+     * @param string $chatId
+     * @param string $userId
      * @param bool $approve
      * @return Entity
+     * @throws Exception
      */
     public function resolvePendingUser($chatId, $userId, $approve = true)
     {
@@ -436,9 +522,10 @@ class Client
 
     /**
      * Принять решение о всех пользователях, ожидающих вступления в чат
-     * @param $chatId
+     * @param string $chatId
      * @param bool $approve
      * @return Entity
+     * @throws Exception
      */
     public function resolvePendingEveryone($chatId, $approve = true)
     {
@@ -454,6 +541,7 @@ class Client
      * @param string $chatId
      * @param string $title
      * @return Entity
+     * @throws Exception
      */
     public function setTitle($chatId, $title)
     {
@@ -468,6 +556,7 @@ class Client
      * @param string $chatId
      * @param string $about
      * @return Entity
+     * @throws Exception
      */
     public function setAbout($chatId, $about)
     {
@@ -482,6 +571,7 @@ class Client
      * @param string $chatId
      * @param string $rules
      * @return Entity
+     * @throws Exception
      */
     public function setRules($chatId, $rules)
     {
@@ -495,6 +585,7 @@ class Client
      * @param string $chatId
      * @param array[string] $msgIds
      * @return Entity
+     * @throws Exception
      */
     public function pinMessage($chatId, $msgIds)
     {
@@ -508,6 +599,7 @@ class Client
      * @param string $chatId
      * @param array[string] $msgIds
      * @return Entity
+     * @throws Exception
      */
     public function unpinMessage($chatId, $msgIds)
     {
@@ -518,12 +610,14 @@ class Client
 
 
     // =======================================================================================================
-    //     FILES
+    // API:  FILES
     // =======================================================================================================
 
     /**
-     * @param $fileId
+     * Получить информацию о файле
+     * @param string $fileId
      * @return FileInfo
+     * @throws Exception
      */
     public function fileGetInfo($fileId)
     {
@@ -533,7 +627,7 @@ class Client
     }
 
     // =======================================================================================================
-    //     EVENTS
+    // API:  EVENTS
     // =======================================================================================================
 
     /* Сделаю возможно в будущем */
