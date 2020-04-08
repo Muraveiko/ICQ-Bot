@@ -1,9 +1,12 @@
 <?php
+
 namespace Antson\IcqBot;
 
 use Antson\IcqBot\Entities\Entity;
-use Antson\IcqBot\Entities\BotInfo;
 use Antson\IcqBot\Entities\SendResult;
+use Antson\IcqBot\Entities\BotInfo;
+use Antson\IcqBot\Entities\ChatInfo;
+use Antson\IcqBot\Entities\FileInfo;
 
 use Muraveiko\PhpCurler\Curler;
 
@@ -12,7 +15,7 @@ class Client
     /**
      * @var string
      */
-    private $api_url='https://api.icq.net/bot/v1/';
+    private $api_url = 'https://api.icq.net/bot/v1/';
 
     /**
      * @var string
@@ -29,20 +32,21 @@ class Client
      * @param string $token
      * @param string|null $api_url
      */
-    public function __construct($token,$api_url=null)
+    public function __construct($token, $api_url = null)
     {
         $this->token = $token;
-        if(!is_null($api_url)){
-            $this->api_url=$api_url;
+        if (!is_null($api_url)) {
+            $this->api_url = $api_url;
         }
         $this->curler = new Curler(array(
             'validMimeTypes' => 'application/json'
         ));
     }
 
-    private function _get_default_param($chatId=null){
-        $param = array('token'=>$this->token);
-        if(!is_null($chatId)) {
+    private function _get_default_param($chatId = null)
+    {
+        $param = array('token' => $this->token);
+        if (!is_null($chatId)) {
             $param['chatId'] = $chatId;
         }
         return $param;
@@ -53,8 +57,9 @@ class Client
      * @param array $param
      * @return false|string
      */
-    private function _do_request($method,$param){
-        return $this->curler->get($this->api_url.$method.'?'.http_build_query($param));
+    private function _do_request($method, $param)
+    {
+        return $this->curler->get($this->api_url . $method . '?' . http_build_query($param));
     }
 
 
@@ -66,9 +71,10 @@ class Client
      * Метод можно использовать для проверки валидности токена.
      * @return BotInfo
      */
-    public function self_get(){
+    public function self_get()
+    {
         $param = $this->_get_default_param();
-        return new BotInfo($this->_do_request('self/get',$param));
+        return new BotInfo($this->_do_request('self/get', $param));
     }
 
 
@@ -87,23 +93,24 @@ class Client
      * @param array|null $inlineKeyboardMarkup
      * @return SendResult
      */
-    public function sendText($chatId,$text,$replyMsgId = null,$forwardMsgId=null,$forwardChatId = null,$inlineKeyboardMarkup=null){
+    public function sendText($chatId, $text, $replyMsgId = null, $forwardMsgId = null, $forwardChatId = null, $inlineKeyboardMarkup = null)
+    {
         $param = $this->_get_default_param($chatId);
         $param['text'] = $text;
-        if(!is_null($replyMsgId)){
+        if (!is_null($replyMsgId)) {
             $param['replyMsgId'] = $replyMsgId;
         }
-        if(!is_null($forwardMsgId)){
+        if (!is_null($forwardMsgId)) {
             $param['forwardMsgId'] = $forwardMsgId;
         }
-        if(!is_null($forwardChatId)){
+        if (!is_null($forwardChatId)) {
             $param['forwardChatId'] = $forwardChatId;
         }
-        if(!is_null($inlineKeyboardMarkup)){
+        if (!is_null($inlineKeyboardMarkup)) {
             $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
         }
 
-        return new SendResult($this->_do_request('messages/sendText',$param));
+        return new SendResult($this->_do_request('messages/sendText', $param));
     }
 
     /**
@@ -117,29 +124,31 @@ class Client
      * @param string|null $inlineKeyboardMarkup
      * @return SendResult
      */
-    public function sendPresentFile($chatId,$fileId,$caption=null,$replyMsgId = null,$forwardMsgId=null,$forwardChatId = null,$inlineKeyboardMarkup=null){
+    public function sendPresentFile($chatId, $fileId, $caption = null, $replyMsgId = null, $forwardMsgId = null, $forwardChatId = null, $inlineKeyboardMarkup = null)
+    {
         $param = $this->_get_default_param($chatId);
         $param['fileId'] = $fileId;
         $param['caption'] = $caption;
-        if(!is_null($replyMsgId)){
+        if (!is_null($replyMsgId)) {
             $param['replyMsgId'] = $replyMsgId;
         }
-        if(!is_null($forwardMsgId)){
+        if (!is_null($forwardMsgId)) {
             $param['forwardMsgId'] = $forwardMsgId;
         }
-        if(!is_null($forwardChatId)){
+        if (!is_null($forwardChatId)) {
             $param['forwardChatId'] = $forwardChatId;
         }
-        if(!is_null($inlineKeyboardMarkup)){
+        if (!is_null($inlineKeyboardMarkup)) {
             $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
         }
 
-        return new SendResult($this->_do_request('messages/sendFile',$param));
+        return new SendResult($this->_do_request('messages/sendFile', $param));
 
     }
 
-    public function sendNewFile($chatId,$fileId){
-
+    public function sendNewFile($chatId, $fileId)
+    {
+        /** @todo */
     }
 
     /**
@@ -152,27 +161,29 @@ class Client
      * @param string|null $inlineKeyboardMarkup
      * @return SendResult
      */
-    public function sendPresentVoice($chatId,$fileId,$replyMsgId = null,$forwardMsgId=null,$forwardChatId = null,$inlineKeyboardMarkup=null){
+    public function sendPresentVoice($chatId, $fileId, $replyMsgId = null, $forwardMsgId = null, $forwardChatId = null, $inlineKeyboardMarkup = null)
+    {
         $param = $this->_get_default_param($chatId);
         $param['fileId'] = $fileId;
-        if(!is_null($replyMsgId)){
+        if (!is_null($replyMsgId)) {
             $param['replyMsgId'] = $replyMsgId;
         }
-        if(!is_null($forwardMsgId)){
+        if (!is_null($forwardMsgId)) {
             $param['forwardMsgId'] = $forwardMsgId;
         }
-        if(!is_null($forwardChatId)){
+        if (!is_null($forwardChatId)) {
             $param['forwardChatId'] = $forwardChatId;
         }
-        if(!is_null($inlineKeyboardMarkup)){
+        if (!is_null($inlineKeyboardMarkup)) {
             $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
         }
 
-        return new SendResult($this->_do_request('messages/sendVoice',$param));
+        return new SendResult($this->_do_request('messages/sendVoice', $param));
     }
 
-    public function sendNewVoice($chatId,$fileId){
-
+    public function sendNewVoice($chatId, $fileId)
+    {
+        /** @todo */
     }
 
     /**
@@ -182,11 +193,12 @@ class Client
      * @param string $text
      * @return Entity
      */
-    public function editText($chatId,$msgId,$text){
+    public function editText($chatId, $msgId, $text)
+    {
         $param = $this->_get_default_param($chatId);
         $param['msgId'] = $msgId;
         $param['text'] = $text;
-        return new Entity($this->_do_request('messages/editText',$param));
+        return new Entity($this->_do_request('messages/editText', $param));
     }
 
     /**
@@ -195,10 +207,11 @@ class Client
      * @param array[string] $msgIds
      * @return Entity
      */
-    public function deleteMessages($chatId,$msgIds){
+    public function deleteMessages($chatId, $msgIds)
+    {
         $param = $this->_get_default_param($chatId);
         $param['msgIds'] = $msgIds;
-        return new Entity($this->_do_request('messages/editText',$param));
+        return new Entity($this->_do_request('messages/editText', $param));
     }
 
     /**
@@ -209,89 +222,206 @@ class Client
      * @param string|null $url
      * @return Entity
      */
-    public function answerCallbackQuery($queryId,$text,$showAlert=false,$url=null){
+    public function answerCallbackQuery($queryId, $text, $showAlert = false, $url = null)
+    {
         $param = $this->_get_default_param();
         $param['queryId'] = $queryId;
         $param['text'] = $text;
         $param['showAlert'] = $showAlert;
-        if(!is_null($url)){
+        if (!is_null($url)) {
             $param['url'] = $url;
         }
-        return new Entity($this->_do_request('messages/answerCallbackQuery',$param));
+        return new Entity($this->_do_request('messages/answerCallbackQuery', $param));
 
     }
     // =======================================================================================================
     //     CHATS
     // =======================================================================================================
 
-    public function sendActions(){
+    public function sendActions()
+    {
+        /** @todo */
+    }
+
+
+    /**
+     * @param $chatId
+     * @return ChatInfo
+     */
+    public function chatGetInfo($chatId)
+    {
+        $param = $this->_get_default_param($chatId);
+        return new ChatInfo($this->_do_request('chats/getInfo', $param));
+    }
+
+    public function getAdmins()
+    {
+        /** @todo */
 
     }
 
-    public function chatGetInfo(){
+    public function getMembers()
+    {
+        /** @todo */
 
     }
 
-    public function getAdmins(){
+    public function getBlockedUsers()
+    {
+        /** @todo */
 
     }
 
-    public function getMembers(){
+    public function getPendingUsers()
+    {
+        /** @todo */
 
     }
 
-    public function getBlockedUsers(){
-
+    /**
+     * Заблокировать пользователя в чате
+     * @param string $chatId Уникальный ник или id группы или канала.
+     * @param string $userId Уникальный ник или id пользователя.
+     * @param bool $delLastMessages
+     * @return Entity
+     */
+    public function blockUser($chatId, $userId, $delLastMessages = true)
+    {
+        $param = $this->_get_default_param($chatId);
+        $param['userId'] = $userId;
+        $param['delLastMessages'] = $delLastMessages;
+        return new Entity($this->_do_request('chats/blockUser', $param));
     }
 
-    public function getPendingUsers(){
-
+    /**
+     * Разблокировать пользователя в чате
+     * @param string $chatId Уникальный ник или id группы или канала.
+     * @param string $userId Уникальный ник или id пользователя.
+     * @return Entity
+     */
+    public function unblockUser($chatId, $userId)
+    {
+        $param = $this->_get_default_param($chatId);
+        $param['userId'] = $userId;
+        return new Entity($this->_do_request('chats/unblockUser', $param));
     }
 
-    public function blockUser(){
-
+    /**
+     * Принять решение о пользователе, ожидающем вступления в чат
+     * @param $chatId
+     * @param $userId
+     * @param bool $approve
+     * @return Entity
+     */
+    public function resolvePendingUser($chatId,$userId,$approve=true)
+    {
+        $param = $this->_get_default_param($chatId);
+        $param['userId'] = $userId;
+        $param['approve'] = $approve;
+        return new Entity($this->_do_request('chats/resolvePending', $param));
     }
 
-    public function unblockUser(){
-
+    /**
+     * Принять решение о всех пользователях, ожидающих вступления в чат
+     * @param $chatId
+     * @param bool $approve
+     * @return Entity
+     */
+    public function resolvePendingEveryone($chatId,$approve=true)
+    {
+        $param = $this->_get_default_param($chatId);
+        $param['everyone'] = true;
+        $param['approve'] = $approve;
+        return new Entity($this->_do_request('chats/resolvePending', $param));
     }
 
-    public function resolvePending(){
-
+    /**
+     * Изменить название чата
+     * Для вызова этого метода бот должен быть администратором в чате.
+     * @param string $chatId
+     * @param string $title
+     * @return Entity
+     */
+    public function setTitle($chatId,$title)
+    {
+        $param = $this->_get_default_param($chatId);
+        $param['title'] = $title;
+        return new Entity($this->_do_request('chats/setTitle', $param));
     }
 
-    public function setTitle(){
-
+    /**
+     * Изменить описание чата
+     * Для вызова этого метода бот должен быть администратором в чате.
+     * @param string $chatId
+     * @param string $about
+     * @return Entity
+     */
+    public function setAbout($chatId,$about)
+    {
+        $param = $this->_get_default_param($chatId);
+        $param['about'] = $about;
+        return new Entity($this->_do_request('chats/setAbout', $param));
     }
 
-    public function setAbout(){
-
+    /**
+     * Изменить правила чата
+     * Для вызова этого метода бот должен быть администратором в чате.
+     * @param string $chatId
+     * @param string $rules
+     * @return Entity
+     */
+    public function setRules($chatId,$rules)
+    {
+        $param = $this->_get_default_param($chatId);
+        $param['rules'] = $rules;
+        return new Entity($this->_do_request('chats/setRules', $param));
     }
 
-    public function setRules(){
-
+    /**
+     * Закрепить сообщение в чате
+     * @param string $chatId
+     * @param array[string] $msgIds
+     * @return Entity
+     */
+    public function pinMessage($chatId, $msgIds)
+    {
+        $param = $this->_get_default_param($chatId);
+        $param['msgIds'] = $msgIds;
+        return new Entity($this->_do_request('chats/pinMessage', $param));
     }
 
-    public function pinMessage(){
-
+    /**
+     * Открепить сообщение в чате
+     * @param string $chatId
+     * @param array[string] $msgIds
+     * @return Entity
+     */
+    public function unpinMessage($chatId, $msgIds)
+    {
+        $param = $this->_get_default_param($chatId);
+        $param['msgIds'] = $msgIds;
+        return new Entity($this->_do_request('chats/unpinMessage', $param));
     }
 
-    public function unpinMessage(){
-
-    }
 
     // =======================================================================================================
     //     FILES
     // =======================================================================================================
 
-    public function fileGetInfo(){
-
+    /**
+     * @param $fileId
+     * @return FileInfo
+     */
+    public function fileGetInfo($fileId)
+    {
+        $param = $this->_get_default_param();
+        $param['fileId'] = $fileId;
+        return new FileInfo($this->_do_request('files/getInfo', $param));
     }
 
     // =======================================================================================================
     //     EVENTS
     // =======================================================================================================
 
-
-
+    /* Сделаю возможно в будущем */
 }

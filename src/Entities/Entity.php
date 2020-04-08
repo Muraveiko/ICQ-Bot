@@ -57,6 +57,7 @@ class Entity
     }
 
     /**
+     * Статус выполнения запроса
      * @return boolean
      */
     public function isOk(){
@@ -64,5 +65,16 @@ class Entity
             return false;
         }
         return $this->ok;
+    }
+
+    /**
+     * Детальное описание результата запроса
+     * @return string|null
+     */
+    public function error_msg(){
+        if(!isset($this->description)){
+            return null;
+        }
+        return $this->description;
     }
 }
