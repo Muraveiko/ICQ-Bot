@@ -1,0 +1,29 @@
+{
+    "name": "antson/icq-bot",
+    "type": "library",
+    "description": "PHP ICQ bot api",
+    "keywords": ["icq", "bot", "api"],
+    "license": "MIT",
+    "homepage": "https://github.com/Muraveiko/ICQ-Bot",
+    "authors": [
+        {
+            "name": "Oleg Muraveyko aka Antson",
+            "email": "oleg@muraveyko.ru",
+            "homepage": "http://muraveyko.ru",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^5.5|^7.0",
+        "ext-pdo": "*",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "muraveiko/php-curler": "^0.07.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Antson\\IcqBot\\": "src/"
+        }
+    }
+}

@@ -1,0 +1,6 @@
+<?php
+// ключ бота
+define('TOKEN','bot token here');
+
+// кому будем слать тесты
+define('DEBUG_UIN','you uin or nick');
