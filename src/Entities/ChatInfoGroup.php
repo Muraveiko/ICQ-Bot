@@ -4,8 +4,7 @@
 namespace Antson\IcqBot\Entities;
 
 /**
- * Class ChatInfoGroup
- * @package Antson\IcqBot\Entities
+ * Чат - группа
  * @method string get_title()
  * @method string get_about()
  * @method string get_rules()

@@ -4,8 +4,7 @@
 namespace Antson\IcqBot\Entities;
 
 /**
- * Class BotInfo
- * @package Antson\IcqBot\Entities
+ * Информация о боте
  * @method string get_userId()
  * @method string get_nick()
  * @method string get_firstName()

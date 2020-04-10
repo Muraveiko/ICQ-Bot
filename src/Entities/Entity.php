@@ -2,7 +2,9 @@
 
 namespace Antson\IcqBot\Entities;
 
-
+/**
+ * Разбор ответа от АПИ
+ */
 class Entity
 {
     /**

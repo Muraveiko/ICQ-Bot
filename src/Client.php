@@ -3,6 +3,7 @@
 namespace Antson\IcqBot;
 
 use Antson\IcqBot\Entities\Entity;
+use Antson\IcqBot\Entities\IcqEvent;
 use Antson\IcqBot\Entities\SendResult;
 use Antson\IcqBot\Entities\SendFileResult;
 use Antson\IcqBot\Entities\BotInfo;
@@ -16,6 +17,10 @@ use Antson\IcqBot\Entities\User;
 use CurlFile;
 use Muraveiko\PhpCurler\Curler;
 
+/**
+ * Выполнение запросов к ICQ API
+ * @package Antson\IcqBot
+ */
 class Client
 {
     /**
@@ -34,19 +39,36 @@ class Client
     private $uin = '';
 
     /**
-     * @var Curler
+     * @var int see __constructor
      */
-    private $curler;
+    private $get_timeout;
+
+    /**
+     * @var int
+     */
+    private $post_timeout = 10000 ;
+
+    /**
+     * Если для отправки большого файла нехватает времени
+     * @param int $post_timeout в миллисекундах
+     */
+    public function setPostTimeout($post_timeout)
+    {
+        $this->post_timeout = $post_timeout;
+    }
 
     /**
      * Client constructor.
      * @param string $token
      * @param string|null $api_url
+     * @param int $timeout в милисекундах для гет запросов к апи
      * @throws Exception
      */
-    public function __construct($token, $api_url = null)
+    public function __construct($token, $api_url = null,$timeout = 5000)
     {
         $this->token = $token;
+        $this->get_timeout = $timeout;
+
         list(, $this->uin) = explode(':', $token);
         if (empty($this->uin)) {
             throw new Exception("wrong token");
@@ -54,9 +76,6 @@ class Client
         if (!is_null($api_url)) {
             $this->api_url = $api_url;
         }
-        $this->curler = new Curler([
-            'validMimeTypes' => 'application/json'
-        ]);
     }
 
     /**
@@ -84,10 +103,17 @@ class Client
      */
     private function _do_request($method, $param)
     {
-        $r = $this->curler->get($this->api_url . $method . '?' . http_build_query($param));
-        if($r === false){
-            $curler_error = $this->curler->getError();
-            throw new Exception($curler_error['message']);
+        /**
+         * @var Curler
+         */
+        $curler = new Curler([
+            'timeout' => $this->get_timeout,
+            'validMimeTypes' => 'application/json'
+        ]);
+        $r = $curler->get($this->api_url . $method . '?' . http_build_query($param));
+        if ($r === false) {
+            $curler_error = $curler->getError();
+            throw new ExceptionLan($curler_error['message']);
         }
         return $r;
     }
@@ -106,7 +132,7 @@ class Client
     // =======================================================================================================
 
     /**
-     * Метод можно использовать для проверки валидности токена.
+     * Метод можно использовать для проверки валидности токена. Информация об самом боте
      * @return BotInfo
      * @throws Exception
      */
@@ -169,7 +195,7 @@ class Client
     {
         $param = $this->_get_default_param($chatId);
         $param['fileId'] = $fileId;
-        if(!is_null($caption)) {
+        if (!is_null($caption)) {
             $param['caption'] = $caption;
         }
         if (!is_null($replyMsgId)) {
@@ -199,11 +225,12 @@ class Client
      * @param string|null $forwardChatId
      * @param string|null $inlineKeyboardMarkup
      * @return SendFileResult
+     * @throws ExceptionLan
      */
     public function sendNewFile($chatId, $curlFile, $caption = null, $replyMsgId = null, $forwardMsgId = null, $forwardChatId = null, $inlineKeyboardMarkup = null)
     {
         $param = $this->_get_default_param($chatId);
-        if(!is_null($caption)) {
+        if (!is_null($caption)) {
             $param['caption'] = $caption;
         }
         if (!is_null($replyMsgId)) {
@@ -219,7 +246,20 @@ class Client
             $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
         }
         $param['file'] = $curlFile;
-        $response =  $this->curler->post($this->api_url . 'messages/sendFile',$param,false) ;
+
+        /**
+         * @var Curler
+         */
+        $curler = new Curler([
+            'timeout' => $this->post_timeout,
+            'validMimeTypes' => 'application/json'
+        ]);
+
+        $response = $curler->post($this->api_url . 'messages/sendFile', $param, false);
+        if ($response === false) {
+            $curler_error = $curler->getError();
+            throw new ExceptionLan($curler_error['message']);
+        }
         return new SendFileResult($response);
     }
 
@@ -264,8 +304,9 @@ class Client
      * @param string|null $forwardChatId
      * @param string|null $inlineKeyboardMarkup
      * @return SendFileResult
+     * @throws ExceptionLan
      */
-    public function sendNewVoice($chatId, $curlFile,  $replyMsgId = null, $forwardMsgId = null, $forwardChatId = null, $inlineKeyboardMarkup = null)
+    public function sendNewVoice($chatId, $curlFile, $replyMsgId = null, $forwardMsgId = null, $forwardChatId = null, $inlineKeyboardMarkup = null)
     {
         $param = $this->_get_default_param($chatId);
         if (!is_null($replyMsgId)) {
@@ -281,7 +322,21 @@ class Client
             $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
         }
         $param['file'] = $curlFile;
-        $response =  $this->curler->post($this->api_url . 'messages/sendVoice',$param,false) ;
+
+        /**
+         * @var Curler
+         */
+        $curler = new Curler([
+            'timeout' => $this->post_timeout,
+            'validMimeTypes' => 'application/json'
+        ]);
+
+        $response = $curler->post($this->api_url . 'messages/sendVoice', $param, false);
+        if ($response === false) {
+            $curler_error = $curler->getError();
+            throw new ExceptionLan($curler_error['message']);
+        }
+
         return new SendFileResult($response);
     }
 
@@ -340,12 +395,15 @@ class Client
     // API: CHATS
     // =======================================================================================================
 
+    const ACTION_LOOKING = "looking";
+    const ACTION_TYPING = "typing";
     /**
      * Отправить текущие действия в чат
      * @param string $chatId
-     * @param [string] $actions - 'looking','typing' или пустой значение, если все действия завершены
+     * @param string[] $actions - ACTION_LOOKING ,ACTION_TYPING или пустой значение, если все действия завершены
      * @return Entity
      * @throws Exception
+     * @see Client::ACTION_TYPING, Client::ACTION_LOOKING
      */
     public function sendActions($chatId, $actions)
     {
@@ -630,5 +688,36 @@ class Client
     // API:  EVENTS
     // =======================================================================================================
 
-    /* Coming soon */
+    /**
+     * Сообщения к боту
+     * @param int $lastEventId
+     * @param int $pollTime
+     * @return IcqEvent[]
+     * @throws Exception
+     */
+    public function getEvents($lastEventId = 0, $pollTime = 25)
+    {
+        $events = [];
+
+        $timeout = $pollTime + 1; // добавляем секунду, чтобы мы не завершали соединение раньше сервера
+        $param = $this->_get_default_param();
+        $param['lastEventId'] = $lastEventId;
+        $param['pollTime'] = $pollTime;
+        $listener = new Curler([
+            'maxFilesize' => 16777216,  // 16M
+            'validMimeTypes' => 'application/json',
+            'timeout' => $timeout * 1000,
+        ]);
+        $response = $listener->get($this->api_url . 'events/get?' . http_build_query($param));
+        if ($response === false) {
+            $curler_error = $listener->getError();
+            throw new ExceptionLan($curler_error['message']);
+        }
+
+        $data = json_decode($response);
+        foreach ($data->events as $ev) {
+            $events[] = new IcqEvent((array)$ev);
+        }
+        return $events;
+    }
 }

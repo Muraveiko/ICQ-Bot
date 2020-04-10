@@ -4,8 +4,7 @@
 namespace Antson\IcqBot\Entities;
 
 /**
- * Class ChatInfoPrivate
- * @package Antson\IcqBot\Entities
+ * Чат - приватная беседа
  * @method string get_firstName()
  * @method string get_lastName()
  * @method string get_nick()
