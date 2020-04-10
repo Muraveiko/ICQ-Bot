@@ -14,6 +14,8 @@ use Antson\IcqBot\Entities\ChatInfoPrivate;
 use Antson\IcqBot\Entities\FileInfo;
 use Antson\IcqBot\Entities\User;
 
+use Antson\IcqBot\Keyboard\InlineKeyboard;
+
 use CurlFile;
 use Muraveiko\PhpCurler\Curler;
 
@@ -155,7 +157,7 @@ class Client
      * @param string|null $replyMsgId
      * @param string|null $forwardMsgId
      * @param string|null $forwardChatId
-     * @param array|null $inlineKeyboardMarkup
+     * @param InlineKeyboard|null $inlineKeyboardMarkup
      * @return SendResult
      * @throws Exception
      */
@@ -173,7 +175,7 @@ class Client
             $param['forwardChatId'] = $forwardChatId;
         }
         if (!is_null($inlineKeyboardMarkup)) {
-            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
+            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup->toApiParam();
         }
 
         return new SendResult($this->_do_request('messages/sendText', $param));
@@ -187,7 +189,7 @@ class Client
      * @param string|null $replyMsgId
      * @param string|null $forwardMsgId
      * @param string|null $forwardChatId
-     * @param string|null $inlineKeyboardMarkup
+     * @param InlineKeyboard|null $inlineKeyboardMarkup
      * @return SendFileResult
      * @throws Exception
      */
@@ -208,7 +210,7 @@ class Client
             $param['forwardChatId'] = $forwardChatId;
         }
         if (!is_null($inlineKeyboardMarkup)) {
-            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
+            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup->toApiParam();
         }
 
         return new SendFileResult($this->_do_request('messages/sendFile', $param));
@@ -223,7 +225,7 @@ class Client
      * @param string|null $replyMsgId
      * @param string|null $forwardMsgId
      * @param string|null $forwardChatId
-     * @param string|null $inlineKeyboardMarkup
+     * @param InlineKeyboard|null $inlineKeyboardMarkup
      * @return SendFileResult
      * @throws ExceptionLan
      */
@@ -243,7 +245,7 @@ class Client
             $param['forwardChatId'] = $forwardChatId;
         }
         if (!is_null($inlineKeyboardMarkup)) {
-            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
+            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup->toApiParam();
         }
         $param['file'] = $curlFile;
 
@@ -270,7 +272,7 @@ class Client
      * @param string|null $replyMsgId
      * @param string|null $forwardMsgId
      * @param string|null $forwardChatId
-     * @param string|null $inlineKeyboardMarkup
+     * @param InlineKeyboard|null $inlineKeyboardMarkup
      * @return SendFileResult
      * @throws Exception
      */
@@ -288,7 +290,7 @@ class Client
             $param['forwardChatId'] = $forwardChatId;
         }
         if (!is_null($inlineKeyboardMarkup)) {
-            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
+            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup->toApiParam();
         }
 
         return new SendFileResult($this->_do_request('messages/sendVoice', $param));
@@ -302,7 +304,7 @@ class Client
      * @param string|null $replyMsgId
      * @param string|null $forwardMsgId
      * @param string|null $forwardChatId
-     * @param string|null $inlineKeyboardMarkup
+     * @param InlineKeyboard|null $inlineKeyboardMarkup
      * @return SendFileResult
      * @throws ExceptionLan
      */
@@ -319,7 +321,7 @@ class Client
             $param['forwardChatId'] = $forwardChatId;
         }
         if (!is_null($inlineKeyboardMarkup)) {
-            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup;
+            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup->toApiParam();
         }
         $param['file'] = $curlFile;
 
