@@ -692,8 +692,10 @@ class Client
 
     /**
      * Сообщения к боту
-     * @param int $lastEventId
-     * @param int $pollTime
+     * @param int $lastEventId Если Вы до этого передавали больше нуля, то апи это помнит и возврашать будет только новые.
+     *                         т.е. Этот параметр можно использовать как подтверждение последнего обработанного Вами уведомления.
+     *                         Вы не сможете переполучить заново подтвержденные сообщения, указав номер меньше чем хоть раз посланный.
+     * @param int $pollTime in seconds
      * @return IcqEvent[]
      * @throws Exception
      */
@@ -715,10 +717,13 @@ class Client
             $curler_error = $listener->getError();
             throw new ExceptionLan($curler_error['message']);
         }
-
         $data = json_decode($response);
-        foreach ($data->events as $ev) {
-            $events[] = new IcqEvent((array)$ev);
+        if(!empty($data->ok)) {
+            if (isset($data->events)) {
+                foreach ($data->events as $ev) {
+                    $events[] = new IcqEvent((array)$ev);
+                }
+            }
         }
         return $events;
     }
