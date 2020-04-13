@@ -1,13 +1,25 @@
 <?php
+/**
+ * This file is part of the IcqBot package.
+ *
+ * (c) Oleg Muraveyko aka Antson
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Antson\IcqBot\Entities;
 
 /**
- * Разбор ответа от АПИ
+ * This is the base class for all entities.
+ *
+ * Используется для разбор ответа от АПИ
  */
 class Entity
 {
     /**
+     * Entity constructor.
+     *
      * @param array|string  $data
      */
     public function __construct($data)
@@ -22,6 +34,7 @@ class Entity
 
 
     /**
+     * Get a property from the current Entity
      *
      * @param mixed $property
      * @param mixed $default
@@ -38,6 +51,7 @@ class Entity
     }
 
     /**
+     * Return the variable for the called getter or magically set properties dynamically.
      *
      * @param $method
      * @param $args
@@ -59,7 +73,8 @@ class Entity
     }
 
     /**
-     * Статус выполнения запроса
+     * Статус выполнения запроса АПИ
+     *
      * @return boolean
      */
     public function isOk(){
@@ -71,6 +86,7 @@ class Entity
 
     /**
      * Детальное описание результата запроса
+     *
      * @return string|null
      */
     public function error_msg(){

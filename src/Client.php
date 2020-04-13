@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * This file is part of the IcqBot package.
+ *
+ * (c) Oleg Muraveyko aka Antson
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 namespace Antson\IcqBot;
 
 use Antson\IcqBot\Entities\Entity;
@@ -26,17 +33,17 @@ use Muraveiko\PhpCurler\Curler;
 class Client
 {
     /**
-     * @var string
+     * @var string Урл апи по умолчанию. Необязательный параметр в конструкторе
      */
     private $api_url = 'https://api.icq.net/bot/v1/';
 
     /**
-     * @var string
+     * @var string Ключ к апи
      */
     private $token = '';
 
     /**
-     * @var string
+     * @var string Ид бота. Находится автоматически из ключа
      */
     private $uin = '';
 
@@ -46,7 +53,7 @@ class Client
     private $get_timeout;
 
     /**
-     * @var int
+     * @var int при отправке файлов на сервер
      */
     private $post_timeout = 10000 ;
 

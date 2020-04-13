@@ -1,4 +1,12 @@
 <?php
+/**
+ * This file is part of the IcqBot package.
+ *
+ * (c) Oleg Muraveyko aka Antson
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 
 namespace Antson\IcqBot\Entities;
@@ -22,10 +30,11 @@ class IcqEvent extends Entity
     const CHANGED_CHAT_INFO = "changedChatInfo";
     const CALLBACK_QUERY = "callbackQuery";
 
-    /** @var mixed */
+    /** @var mixed требуется для более глубокого разбора ответа*/
     protected $payload;
 
     /**
+     * Информационная часть события
      * @return Payload
      * @throws Exception
      */
