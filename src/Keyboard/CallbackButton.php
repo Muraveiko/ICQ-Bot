@@ -19,12 +19,16 @@ class CallbackButton extends Button
 {
     /**
      * CallbackButton constructor.
-     * @param $text
-     * @param $callbackData
+     * @param string $text
+     * @param string $callbackData
+     * @param string|null $style опциональное поле, отвечает за стиль текста на кнопке. see Button STYLE_xxx
      */
-    public function __construct($text,$callbackData)
+    public function __construct($text,$callbackData,$style=null)
     {
         $this->object = (object)['text'=>$text,'callbackData'=>$callbackData];
+        if(!is_null($style)){
+            $this->object->style = $style;
+        }
     }
 
 }

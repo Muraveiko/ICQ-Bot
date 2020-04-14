@@ -18,6 +18,10 @@ use stdClass;
  */
 abstract class Button
 {
+    const STYLE_BASE = "base";
+    const STYLE_PRIMARY = "primary";
+    const STYLE_ATTENTIOn = "attention";
+
     /** @var stdClass кнопка описывается объектом */
     protected $object = null;
 
