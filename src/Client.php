@@ -354,14 +354,18 @@ class Client
      * @param string $chatId
      * @param string $msgId
      * @param string $text
+     * @param InlineKeyboard|null $inlineKeyboardMarkup
      * @return Entity
      * @throws Exception
      */
-    public function editText($chatId, $msgId, $text)
+    public function editText($chatId, $msgId, $text, $inlineKeyboardMarkup = null)
     {
         $param = $this->_get_default_param($chatId);
         $param['msgId'] = $msgId;
         $param['text'] = $text;
+        if (!is_null($inlineKeyboardMarkup)) {
+            $param['inlineKeyboardMarkup'] = $inlineKeyboardMarkup->toApiParam();
+        }
         return new Entity($this->_do_request('messages/editText', $param));
     }
 
