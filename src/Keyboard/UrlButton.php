@@ -21,10 +21,14 @@ class UrlButton extends Button
      * UrlButton constructor.
      * @param $text
      * @param $url
+     * @param null $style
      */
-    public function __construct($text,$url)
+    public function __construct($text,$url,$style=null)
     {
         $this->object = (object)['text'=>$text,'url'=>$url];
+        if(!is_null($style)){
+            $this->object->style = $style;
+        }
     }
 
 }
