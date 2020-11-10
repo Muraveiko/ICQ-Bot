@@ -2,9 +2,10 @@
 require_once "../vendor/autoload.php";
 require_once "config.php";
 
-use \Antson\IcqBot\Keyboard\InlineKeyboard;
-use \Antson\IcqBot\Keyboard\UrlButton;
+use Antson\IcqBot\Keyboard\InlineKeyboard;
+use Antson\IcqBot\Keyboard\UrlButton;
 use Antson\IcqBot\Keyboard\CallbackButton;
+use Antson\IcqBot\Keyboard\Button;
 
 // просто кнопку
 $keyboard0 = new InlineKeyboard(new UrlButton("PHP Library", "https://packagist.org/packages/antson/icq-bot"));
@@ -25,15 +26,15 @@ $keyboard2 = new InlineKeyboard(
         new UrlButton("PHP Library", "https://packagist.org/packages/antson/icq-bot")
     ],
     [
-        new CallbackButton("★☆☆☆☆", "callback1"),
+        new CallbackButton("★☆☆☆☆", "callback1", Button::STYLE_ATTENTION),
         new CallbackButton("★★☆☆☆", "callback2"),
         new CallbackButton("★★★☆☆", "callback3"),
         new CallbackButton("★★★★☆", "callback4"),
-        new CallbackButton("★★★★★", "callback5"),
+        new CallbackButton("★★★★★", "callback5", Button::STYLE_PRIMARY),
     ],
     [
         new UrlButton("API DOC", "https://icq.com/botapi"),
-        new UrlButton("Tutorial", "https://icq.com/botapi/botTutorial.html")
+        new UrlButton("Tutorial", "https://icq.com/botapi/botTutorial.html", Button::STYLE_PRIMARY)
     ]
 );
 show_debug($keyboard2, "каждая строка как массив");
