@@ -9,7 +9,7 @@ try {
     if ($result->isOk()) {
         echo 'msgId:' . $result->get_msgId();
         sleep(5);
-        $icq->editText(DEBUG_UIN, $result->get_msgId(), 'Здравствуй,Мир! ' . Date("Y-m-d H:i:s"));
+        $icq->editText(DEBUG_UIN, $result->get_msgId(), 'Здравствуй,Мир! ' . Date("Y-m-d H:i:s"), new \Antson\IcqBot\Keyboard\InlineKeyboard(new \Antson\IcqBot\Keyboard\UrlButton('Перейти на Github', 'https://github.com/Muraveiko/ICQ-Bot', \Antson\IcqBot\Keyboard\Button::STYLE_ATTENTION)));
 
         if (false) { // Удалить сообщение
             sleep(5);
