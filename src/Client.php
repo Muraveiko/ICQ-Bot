@@ -119,14 +119,19 @@ class Client
             'timeout' => $this->get_timeout,
             'validMimeTypes' => 'application/json'
         ]);
+        
+        // fix http_buid 
         $param = array_map(function($item) {
             if ($item === true)
-                $item = 'true';
+                $item = 'true';  // ошибочно приводит к 1
             else if ($item === false) {
-                $item = 'false';
+                $item = 'false'; // а тут подставляет ноль
             }
             return $item;
         }, $param);
+        
+        
+        
         $r = $curler->get($this->api_url . $method . '?' . http_build_query($param));
         if ($r === false) {
             $curler_error = $curler->getError();
