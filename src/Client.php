@@ -119,6 +119,14 @@ class Client
             'timeout' => $this->get_timeout,
             'validMimeTypes' => 'application/json'
         ]);
+        $param = array_map(function($item) {
+            if ($item === true)
+                $item = 'true';
+            else if ($item === false) {
+                $item = 'false';
+            }
+            return $item;
+        }, $param);
         $r = $curler->get($this->api_url . $method . '?' . http_build_query($param));
         if ($r === false) {
             $curler_error = $curler->getError();
