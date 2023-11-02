@@ -15,7 +15,7 @@
     ],
     "require": {
         "php": "^5.5|^7.0",
-        "muraveiko/php-curler": "^0.07.0",
+        "muraveiko/php-curler": "^0.8.0",
       "ext-json": "*",
       "ext-curl": "*"
     },

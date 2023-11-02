@@ -117,7 +117,8 @@ class Client
          */
         $curler = new Curler([
             'timeout' => $this->get_timeout,
-            'validMimeTypes' => 'application/json'
+            'validMimeTypes' => 'application/json',
+            'useCookies' => false
         ]);
         
         // fix http_buid 
@@ -274,7 +275,8 @@ class Client
          */
         $curler = new Curler([
             'timeout' => $this->post_timeout,
-            'validMimeTypes' => 'application/json'
+            'validMimeTypes' => 'application/json',
+            'useCookies' => false
         ]);
 
         $response = $curler->post($this->api_url . 'messages/sendFile', $param, false);
@@ -350,7 +352,8 @@ class Client
          */
         $curler = new Curler([
             'timeout' => $this->post_timeout,
-            'validMimeTypes' => 'application/json'
+            'validMimeTypes' => 'application/json',
+            'useCookies' => false
         ]);
 
         $response = $curler->post($this->api_url . 'messages/sendVoice', $param, false);
@@ -735,6 +738,7 @@ class Client
             'maxFilesize' => 16777216,  // 16M
             'validMimeTypes' => 'application/json',
             'timeout' => $timeout * 1000,
+            'useCookies' => false
         ]);
         $response = $listener->get($this->api_url . 'events/get?' . http_build_query($param));
         if ($response === false) {
